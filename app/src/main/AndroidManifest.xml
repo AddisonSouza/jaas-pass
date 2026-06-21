@@ -7,19 +7,24 @@
     -->
 
     <application
+        android:name=".App"
         android:allowBackup="false"
         android:label="jaas-pass"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Material.Light.NoActionBar">
 
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.UnlockActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".ui.ListActivity" android:exported="false" />
+        <activity android:name=".ui.DetailActivity" android:exported="false" />
+        <activity android:name=".ui.AddEditActivity" android:exported="false" />
     </application>
 
 </manifest>

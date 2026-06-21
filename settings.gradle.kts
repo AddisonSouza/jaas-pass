@@ -24,3 +24,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "jaas-pass"
 include(":app")
+include(":vault-crypto")

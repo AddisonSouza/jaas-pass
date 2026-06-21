@@ -39,4 +39,6 @@ android {
 // Apenas o SDK Android (android.*, java.*, javax.crypto.*) e a Kotlin stdlib (via plugin).
 // Dependências de teste, quando necessárias (tasks §1.5), serão discutidas em /ps:apply.
 dependencies {
+    // Módulo interno (não é terceiro): núcleo criptográfico puro.
+    implementation(project(":vault-crypto"))
 }
