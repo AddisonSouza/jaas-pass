@@ -50,10 +50,23 @@ class VaultRepository(context: Context) : VaultMetaStore {
             )
         }
 
-    /** Tarefa 3.4 (troca de senha): re-grava apenas a DEK cifrada, sem tocar nas entradas. */
-    override fun updateWrappedDek(wrappedDek: ByteArray) {
-        val values = ContentValues().apply { put(META_WRAPPED_DEK, wrappedDek) }
-        helper.writableDatabase.update(META, values, "id = 1", null)
+    /**
+     * Troca de senha: re-grava salt (rotacionado) + DEK cifrada de forma atômica, sem tocar nas
+     * entradas. Envolto em transação (tudo-ou-nada) para nunca deixar salt e DEK divergentes.
+     */
+    override fun updateAuthMaterial(salt: ByteArray, wrappedDek: ByteArray) {
+        val db = helper.writableDatabase
+        db.beginTransaction()
+        try {
+            val values = ContentValues().apply {
+                put(META_SALT, salt)
+                put(META_WRAPPED_DEK, wrappedDek)
+            }
+            db.update(META, values, "id = 1", null)
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
+        }
     }
 
     // --- Entradas (CRUD sobre blobs cifrados) ---

@@ -79,8 +79,10 @@ class VaultSession(
     }
 
     /**
-     * Tarefa 3.4 — Troca da senha mestra: re-cifra **apenas a DEK** com a KEK da nova senha,
-     * mantendo todas as entradas íntegras. Requer a senha atual correta.
+     * Tarefa 3.4 — Troca da senha mestra: rotaciona o salt e re-cifra **apenas a DEK** com a KEK
+     * da nova senha (derivada com o salt novo), mantendo todas as entradas íntegras. Requer a
+     * senha atual correta. A senha atual é validada antes de qualquer escrita: se estiver errada,
+     * o material persistido permanece intacto.
      * @return true se trocou; false se a senha atual está errada.
      */
     fun changeMasterPassword(current: CharArray, new: CharArray): Boolean {
@@ -91,10 +93,11 @@ class VaultSession(
         } catch (e: AEADBadTagException) {
             return false
         }
-        // Re-cifra a MESMA DEK com a KEK da nova senha (mesmo salt: re-cifra só a DEK, design §3.4).
-        val kekNew = crypto.deriveKEK(new, meta.salt, iterations)
+        // Rotaciona o salt: deriva a nova KEK com um salt novo e re-cifra a MESMA DEK (design §3.4).
+        val newSalt = crypto.generateSalt()
+        val kekNew = crypto.deriveKEK(new, newSalt, iterations)
         val rewrapped = crypto.wrapDEK(currentDek, kekNew)
-        store.updateWrappedDek(rewrapped)
+        store.updateAuthMaterial(newSalt, rewrapped) // grava salt + DEK atomicamente
         dek = currentDek
         touch()
         return true
