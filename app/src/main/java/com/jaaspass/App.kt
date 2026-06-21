@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.Application
 import android.os.Bundle
 import com.jaaspass.crypto.VaultSession
+import com.jaaspass.data.Vault
 import com.jaaspass.data.VaultRepository
 
 /**
@@ -19,11 +20,16 @@ class App : Application() {
     lateinit var session: VaultSession
         private set
 
+    lateinit var vault: Vault
+        private set
+
     private var startedActivities = 0
 
     override fun onCreate() {
         super.onCreate()
-        session = VaultSession(VaultRepository(this))
+        val repo = VaultRepository(this)
+        session = VaultSession(repo)
+        vault = Vault(repo, session)
         registerActivityLifecycleCallbacks(AutoLockCallbacks())
     }
 
@@ -52,5 +58,8 @@ class App : Application() {
     companion object {
         /** Acesso à sessão a partir de uma Activity. */
         fun session(activity: Activity): VaultSession = (activity.application as App).session
+
+        /** Acesso à fachada do cofre a partir de uma Activity. */
+        fun vault(activity: Activity): Vault = (activity.application as App).vault
     }
 }

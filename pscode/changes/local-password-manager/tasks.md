@@ -22,10 +22,10 @@
 - [x] 3.4 Troca de senha mestra (re-cifrar apenas a DEK)
 
 ## 4. UI mínima
-- [ ] 4.1 Tela de Desbloqueio
-- [ ] 4.2 Lista de entradas (decriptada em memória)
-- [ ] 4.3 Detalhe/Editar (mostrar/ocultar, copiar)
-- [ ] 4.4 Adicionar entrada
+- [x] 4.1 Tela de Desbloqueio
+- [x] 4.2 Lista de entradas (decriptada em memória)
+- [x] 4.3 Detalhe/Editar (mostrar/ocultar, copiar)
+- [x] 4.4 Adicionar entrada
 
 ## 5. Endurecimento de plataforma
 - [ ] 5.1 Manifesto sem permissão `INTERNET`
