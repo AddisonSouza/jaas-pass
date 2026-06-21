@@ -25,4 +25,4 @@
 
 - [x] 4.1 Rodar os self-tests do módulo: `./gradlew :vault-crypto:passwordGenSelfTest` (7/7 verdes).
 - [x] 4.2 Build do APK debug: `./gradlew :app:assembleDebug` sem novas dependências.
-- [ ] 4.3 Sideload e verificação manual: Nova entrada → "Gerar senha" preenche e revela senha forte de 20 chars; salvar e reabrir a entrada confirma persistência.
+- [x] 4.3 Sideload e verificação manual: Nova entrada → "Gerar senha" preenche e revela senha forte de 20 chars; salvar e reabrir a entrada confirma persistência.
