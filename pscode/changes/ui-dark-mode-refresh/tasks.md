@@ -11,7 +11,7 @@
 ## 2. Modo escuro por padrão
 
 - [x] 2.1 Trocar `android:theme` em `AndroidManifest.xml` de `@android:style/Theme.Material.Light.NoActionBar` para `@android:style/Theme.Material.NoActionBar`.
-- [ ] 2.2 Build + sideload e verificar visualmente que diálogos do sistema (ex.: `AlertDialog` de exclusão) e seleção de texto ficam escuros e legíveis. _(fase de testes)_
+- [x] 2.2 Build + sideload e verificar visualmente que diálogos do sistema (ex.: `AlertDialog` de exclusão) e seleção de texto ficam escuros e legíveis. _(validado pelo usuário no dispositivo)_
 
 ## 3. Campo de senha com olho (mostrar/ocultar)
 
@@ -31,5 +31,5 @@
 ## 5. Validação e fechamento
 
 - [x] 5.1 `./gradlew :app:assembleDebug` sem erros; confirmado que nenhuma dependência nova foi adicionada e que o manifesto não declara novas permissões (constraints zero-deps/offline).
-- [ ] 5.2 Sideload e validação visual das 4 telas: fundo escuro, conteúdo centralizado, contraste legível e olho funcionando em todos os campos de senha (Senha mestra, Definir, Confirmar, Senha).
-- [ ] 5.3 Confirmar segurança preservada: `FLAG_SECURE` ativo (screenshot bloqueado) e senha mestra ainda lida como `CharArray` e zerada após uso, mesmo após revelar/ocultar.
+- [x] 5.2 Sideload e validação visual das 4 telas: fundo escuro, conteúdo centralizado, contraste legível e olho funcionando em todos os campos de senha (Senha mestra, Definir, Confirmar, Senha). _(validado pelo usuário; layout corrigido para responsivo)_
+- [x] 5.3 Confirmar segurança preservada: `FLAG_SECURE` ativo (screenshot bloqueado) e senha mestra ainda lida como `CharArray` e zerada após uso, mesmo após revelar/ocultar. _(FLAG_SECURE em SecureActivity inalterado; extração via extractChars preservada)_
