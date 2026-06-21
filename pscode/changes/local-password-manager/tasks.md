@@ -35,8 +35,10 @@
 - [x] 5.5 Revisar ausência de logs de segredos (inclusive build de debug) — nenhum Log/print no código de produção; `PlainEntry.toString()` redige a senha
 
 ## 6. Validação final (critérios de aceitação)
-- [ ] 6.1 Build sem nenhuma dependência de terceiros no Gradle
-- [ ] 6.2 Inspeção do banco não revela senhas nem a senha mestra
-- [ ] 6.3 Cópia dos arquivos para outro ambiente não dá acesso sem a senha mestra
-- [ ] 6.4 Após bloqueio, revelar senha exige novo desbloqueio
-- [ ] 6.5 Aviso na UI: esquecer a senha mestra = perda total e irreversível
+- [x] 6.1 Build sem nenhuma dependência de terceiros no Gradle — verificado (só kotlin-stdlib + :vault-crypto)
+- [x] 6.2 Inspeção do banco não revela senhas nem a senha mestra — probe gera `.db` real (esquema do VaultRepository + cripto real); `sqlite3`/`grep` confirmam ausência de todos os plaintexts
+- [x] 6.3 Cópia dos arquivos para outro ambiente não dá acesso sem a senha mestra — `unlock(senha-errada)=false` sobre o mesmo store
+- [x] 6.4 Após bloqueio, revelar senha exige novo desbloqueio — `lock()` descarta a DEK; `requireDek()` falha e as telas redirecionam ao desbloqueio (coberto por teste de sessão)
+- [x] 6.5 Aviso na UI: esquecer a senha mestra = perda total e irreversível — exibido na tela de setup
+
+> Pendente de confirmação manual on-device (sideload do APK): 6.2/6.3 com o `.db` real do app e 6.4 pela navegação. APK em `C:\Users\addis\Downloads\jaas-pass-debug.apk`.

@@ -27,3 +27,13 @@ tasks.register<JavaExec>("cryptoSelfTest") {
     mainClass.set("com.jaaspass.crypto.CryptoSelfTestKt")
     classpath = sourceSets["test"].runtimeClasspath
 }
+
+// Validação 6.2/6.3 — emite SQL (esquema do VaultRepository + blobs reais) para montar um .db
+// inspecionável com o sqlite3 do platform-tools.
+tasks.register<JavaExec>("vaultDbProbe") {
+    group = "verification"
+    description = "Gera SQL de um cofre real (blobs cifrados) para inspeção do .db."
+    dependsOn("testClasses")
+    mainClass.set("com.jaaspass.crypto.VaultDbProbeKt")
+    classpath = sourceSets["test"].runtimeClasspath
+}
