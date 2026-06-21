@@ -1,0 +1,19 @@
+repo: "AddisonSouza/jaas-pass"
+project: 2
+projectNodeId: "PVT_kwHOCPxf0c4BbPF0"
+statusFieldId: "PVTSSF_lAHOCPxf0c4BbPF0zhWBCDM"
+
+# Estágios pscode -> opções do campo Status do GitHub Project v2
+# Colunas: Backlog → In Progress → In Review → Archive
+statuses:
+  backlog:     "00bdde70"  # Backlog
+  in_progress: "67302383"  # In Progress
+  in_review:   "00f0a2af"  # In Review
+  done:        "e647a16e"  # Archive (estágio terminal do pscode)
+
+# Os change names deste projeto não embutem número de issue.
+issuePattern: "none"
+
+# Vínculo manual change -> issue (umbrella). Tem precedência sobre issuePattern.
+links:
+  local-password-manager: 1
