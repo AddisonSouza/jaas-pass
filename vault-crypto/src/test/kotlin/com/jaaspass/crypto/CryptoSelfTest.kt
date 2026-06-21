@@ -47,6 +47,12 @@ private class FakeStore : VaultMetaStore {
     override fun updateAuthMaterial(salt: ByteArray, wrappedDek: ByteArray) {
         meta = (meta ?: error("sem meta")).copy(salt = salt, wrappedDek = wrappedDek)
     }
+    override fun saveBiometricMaterial(wrappedDek: ByteArray, iv: ByteArray) {
+        meta = (meta ?: error("sem meta")).copy(biometricWrappedDek = wrappedDek, biometricIv = iv)
+    }
+    override fun clearBiometricMaterial() {
+        meta = meta?.copy(biometricWrappedDek = null, biometricIv = null)
+    }
 }
 
 fun main() {
@@ -181,6 +187,30 @@ fun main() {
         assert(s.state == VaultSession.State.UNLOCKED, "não deveria bloquear antes do timeout")
         now += 31_000L; s.enforceTimeout()
         assert(s.state == VaultSession.State.LOCKED, "deveria bloquear após o timeout")
+    }
+
+    test("sessão: exportDekForBiometric exige DESBLOQUEADO (3.1)") {
+        val s = VaultSession(FakeStore(), crypto, iterations = ITER)
+        s.setup("m".toCharArray())
+        // Desbloqueado: expõe a MESMA DEK (mesma instância da sessão).
+        assert(s.exportDekForBiometric() === s.requireDek(), "deveria expor a DEK da sessão")
+        s.lock()
+        var threw = false
+        try { s.exportDekForBiometric() } catch (e: IllegalStateException) { threw = true }
+        assert(threw, "exportDekForBiometric deveria falhar com a sessão bloqueada")
+    }
+
+    test("sessão: unlockWithDek injeta a DEK sem senha (3.2)") {
+        val s = VaultSession(FakeStore(), crypto, iterations = ITER)
+        s.setup("m".toCharArray())
+        val secret = "dado".toByteArray()
+        val blob = crypto.encryptField(secret, s.requireDek())
+        val dek = s.exportDekForBiometric() // simula a DEK decifrada pela biometria
+        s.lock()
+        assert(s.state == VaultSession.State.LOCKED, "deveria estar BLOQUEADO antes da injeção")
+        s.unlockWithDek(dek)
+        assert(s.state == VaultSession.State.UNLOCKED, "unlockWithDek deveria DESBLOQUEAR")
+        assert(crypto.decryptField(blob, s.requireDek()).contentEquals(secret), "a DEK injetada deveria decifrar os dados")
     }
 
     val failed = results.count { !it.second }

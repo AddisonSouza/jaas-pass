@@ -18,6 +18,12 @@ private class MemStore : VaultMetaStore {
     override fun updateAuthMaterial(salt: ByteArray, wrappedDek: ByteArray) {
         meta = (meta ?: error("sem meta")).copy(salt = salt, wrappedDek = wrappedDek)
     }
+    override fun saveBiometricMaterial(wrappedDek: ByteArray, iv: ByteArray) {
+        meta = (meta ?: error("sem meta")).copy(biometricWrappedDek = wrappedDek, biometricIv = iv)
+    }
+    override fun clearBiometricMaterial() {
+        meta = meta?.copy(biometricWrappedDek = null, biometricIv = null)
+    }
 }
 
 private fun hex(b: ByteArray): String = b.joinToString("") { "%02x".format(it) }

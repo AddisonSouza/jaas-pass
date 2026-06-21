@@ -47,6 +47,8 @@ class VaultRepository(context: Context) : VaultMetaStore {
                 iterations = c.getInt(c.getColumnIndexOrThrow(META_ITER)),
                 salt = c.getBlob(c.getColumnIndexOrThrow(META_SALT)),
                 wrappedDek = c.getBlob(c.getColumnIndexOrThrow(META_WRAPPED_DEK)),
+                biometricWrappedDek = c.getColumnIndexOrThrow(META_BIO_DEK).let { if (c.isNull(it)) null else c.getBlob(it) },
+                biometricIv = c.getColumnIndexOrThrow(META_BIO_IV).let { if (c.isNull(it)) null else c.getBlob(it) },
             )
         }
 
@@ -67,6 +69,24 @@ class VaultRepository(context: Context) : VaultMetaStore {
         } finally {
             db.endTransaction()
         }
+    }
+
+    /** Ativar biometria: grava o envelope da DEK pela chave do Keystore (não toca em salt/wrappedDek). */
+    override fun saveBiometricMaterial(wrappedDek: ByteArray, iv: ByteArray) {
+        val values = ContentValues().apply {
+            put(META_BIO_DEK, wrappedDek)
+            put(META_BIO_IV, iv)
+        }
+        helper.writableDatabase.update(META, values, "id = 1", null)
+    }
+
+    /** Desativar biometria / chave invalidada: limpa o envelope biométrico. */
+    override fun clearBiometricMaterial() {
+        val values = ContentValues().apply {
+            putNull(META_BIO_DEK)
+            putNull(META_BIO_IV)
+        }
+        helper.writableDatabase.update(META, values, "id = 1", null)
     }
 
     // --- Entradas (CRUD sobre blobs cifrados) ---
@@ -124,6 +144,9 @@ class VaultRepository(context: Context) : VaultMetaStore {
         const val META_ITER = "iterations"
         const val META_SALT = "salt"
         const val META_WRAPPED_DEK = "wrapped_dek"
+        // Envelope biométrico (nullable): DEK cifrada pela chave do Keystore + IV do GCM.
+        const val META_BIO_DEK = "biometric_wrapped_dek"
+        const val META_BIO_IV = "biometric_iv"
 
         const val ENTRIES = "entries"
         const val E_ID = "id"
@@ -146,7 +169,9 @@ class VaultRepository(context: Context) : VaultMetaStore {
                     $META_SCHEME INTEGER NOT NULL,
                     $META_ITER INTEGER NOT NULL,
                     $META_SALT BLOB NOT NULL,
-                    $META_WRAPPED_DEK BLOB NOT NULL
+                    $META_WRAPPED_DEK BLOB NOT NULL,
+                    $META_BIO_DEK BLOB,
+                    $META_BIO_IV BLOB
                 )
                 """.trimIndent()
             )
@@ -165,13 +190,19 @@ class VaultRepository(context: Context) : VaultMetaStore {
         }
 
         override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-            // Sem migrações ainda (DB_VERSION = 1). O versionamento do esquema *cripto* fica em
-            // vault_meta.scheme_version, independente da versão do schema SQLite.
+            // v1 -> v2 (change biometric-unlock): colunas aditivas, nullable, do envelope biométrico.
+            // Cofres existentes (sem biometria) seguem funcionando — as colunas ficam NULL.
+            if (oldVersion < 2) {
+                db.execSQL("ALTER TABLE $META ADD COLUMN $META_BIO_DEK BLOB")
+                db.execSQL("ALTER TABLE $META ADD COLUMN $META_BIO_IV BLOB")
+            }
+            // O versionamento do esquema *cripto* fica em vault_meta.scheme_version,
+            // independente da versão do schema SQLite.
         }
 
         companion object {
             const val DB_NAME = "vault.db"
-            const val DB_VERSION = 1
+            const val DB_VERSION = 2
         }
     }
 }

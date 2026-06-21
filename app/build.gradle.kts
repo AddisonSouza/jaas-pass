@@ -9,7 +9,10 @@ android {
 
     defaultConfig {
         applicationId = "com.jaaspass"
-        minSdk = 26
+        // minSdk 28: requisito do BiometricPrompt nativo do SDK (android.hardware.biometrics),
+        // mantendo a constraint de zero dependências (sem androidx.biometric). Ver change
+        // biometric-unlock (design §1). Derruba Android 8.0/8.1.
+        minSdk = 28
         targetSdk = 35
         versionCode = 1
         versionName = "0.1.0"
