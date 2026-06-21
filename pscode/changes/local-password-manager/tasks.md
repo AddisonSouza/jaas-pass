@@ -16,10 +16,10 @@
 - [x] 2.2 Garantir que nenhum plaintext é gravado (teste de inspeção do `.db`) — garantido por construção (repo só grava blobs cifrados) + teste cripto "sem plaintext no blob"; inspeção literal do `.db` on-device fica no critério 6.2
 
 ## 3. Sessão e autenticação
-- [ ] 3.1 Setup inicial (definir senha mestra, gerar salt/DEK, persistir blob de cofre)
-- [ ] 3.2 Desbloqueio (deriva KEK, unwrap da DEK, transição de estado)
-- [ ] 3.3 Bloqueio manual + auto-lock por timeout e ao ir para background (descartar DEK)
-- [ ] 3.4 Troca de senha mestra (re-cifrar apenas a DEK)
+- [x] 3.1 Setup inicial (definir senha mestra, gerar salt/DEK, persistir blob de cofre)
+- [x] 3.2 Desbloqueio (deriva KEK, unwrap da DEK, transição de estado)
+- [x] 3.3 Bloqueio manual + auto-lock por timeout e ao ir para background (descartar DEK)
+- [x] 3.4 Troca de senha mestra (re-cifrar apenas a DEK)
 
 ## 4. UI mínima
 - [ ] 4.1 Tela de Desbloqueio

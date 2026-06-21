@@ -39,6 +39,16 @@ private fun containsSubsequence(haystack: ByteArray, needle: ByteArray): Boolean
     return false
 }
 
+/** Store de metadados em memória para testar a [VaultSession] sem Android. */
+private class FakeStore : VaultMetaStore {
+    private var meta: VaultMeta? = null
+    override fun loadMeta(): VaultMeta? = meta
+    override fun saveMeta(meta: VaultMeta) { this.meta = meta }
+    override fun updateWrappedDek(wrappedDek: ByteArray) {
+        meta = (meta ?: error("sem meta")).copy(wrappedDek = wrappedDek)
+    }
+}
+
 fun main() {
     println("== CryptoManager self-test ==")
 
@@ -101,6 +111,51 @@ fun main() {
         val blob = crypto.encryptField(plaintext, dek)
         assert(!containsSubsequence(blob, plaintext), "o plaintext aparece no blob cifrado")
         // o salt/iterações/versão são metadados não sensíveis; só o ciphertext+nonce é persistido.
+    }
+
+    test("sessão: setup -> DESBLOQUEADO; lock descarta a DEK (3.1/3.3)") {
+        val s = VaultSession(FakeStore(), crypto, iterations = ITER)
+        assert(!s.isInitialized, "não deveria estar inicializado antes do setup")
+        s.setup("mestra".toCharArray())
+        assert(s.state == VaultSession.State.UNLOCKED, "setup deveria deixar DESBLOQUEADO")
+        assert(s.isInitialized, "deveria estar inicializado após setup")
+        s.lock()
+        assert(s.state == VaultSession.State.LOCKED, "lock deveria BLOQUEAR")
+        var threw = false
+        try { s.requireDek() } catch (e: IllegalStateException) { threw = true }
+        assert(threw, "requireDek deveria falhar com a sessão bloqueada")
+    }
+
+    test("sessão: unlock com senha certa vs errada (3.2)") {
+        val s = VaultSession(FakeStore(), crypto, iterations = ITER)
+        s.setup("certa".toCharArray()); s.lock()
+        assert(!s.unlock("errada".toCharArray()), "senha errada não deveria desbloquear")
+        assert(s.state == VaultSession.State.LOCKED, "deveria continuar BLOQUEADO após senha errada")
+        assert(s.unlock("certa".toCharArray()), "senha certa deveria desbloquear")
+        assert(s.state == VaultSession.State.UNLOCKED, "deveria ficar DESBLOQUEADO")
+    }
+
+    test("sessão: troca de senha preserva os dados (3.4)") {
+        val s = VaultSession(FakeStore(), crypto, iterations = ITER)
+        s.setup("velha".toCharArray())
+        val secret = "dado-importante".toByteArray()
+        val blob = crypto.encryptField(secret, s.requireDek()) // cifrado com a DEK atual
+        assert(s.changeMasterPassword("velha".toCharArray(), "nova".toCharArray()), "troca deveria funcionar")
+        assert(!s.changeMasterPassword("velha".toCharArray(), "x".toCharArray()), "a senha velha não deveria mais valer")
+        s.lock()
+        assert(!s.unlock("velha".toCharArray()), "senha velha não deveria desbloquear após a troca")
+        assert(s.unlock("nova".toCharArray()), "senha nova deveria desbloquear")
+        assert(crypto.decryptField(blob, s.requireDek()).contentEquals(secret), "dado deveria continuar íntegro")
+    }
+
+    test("sessão: auto-lock por timeout de inatividade (3.3)") {
+        var now = 1_000L
+        val s = VaultSession(FakeStore(), crypto, iterations = ITER, autoLockTimeoutMs = 60_000L, clock = { now })
+        s.setup("m".toCharArray())
+        now += 30_000L; s.enforceTimeout()
+        assert(s.state == VaultSession.State.UNLOCKED, "não deveria bloquear antes do timeout")
+        now += 31_000L; s.enforceTimeout()
+        assert(s.state == VaultSession.State.LOCKED, "deveria bloquear após o timeout")
     }
 
     val failed = results.count { !it.second }

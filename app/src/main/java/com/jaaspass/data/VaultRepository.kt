@@ -4,6 +4,8 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import com.jaaspass.crypto.VaultMeta
+import com.jaaspass.crypto.VaultMetaStore
 
 /**
  * Tarefa 2.1 — Persistência local via SQLite (`android.database.sqlite`, parte do SDK).
@@ -15,18 +17,18 @@ import android.database.sqlite.SQLiteOpenHelper
  * **NENHUM plaintext** é gravado: o repositório recebe e devolve apenas `ByteArray` já cifrados
  * pela camada [com.jaaspass.crypto.CryptoManager]. Ele não conhece chaves nem faz cripto.
  */
-class VaultRepository(context: Context) {
+class VaultRepository(context: Context) : VaultMetaStore {
 
     private val helper = VaultDbHelper(context.applicationContext)
 
-    // --- Metadados do cofre ---
+    // --- Metadados do cofre (implementa VaultMetaStore) ---
 
     /** True se o cofre já foi inicializado (primeiro uso concluído). */
     fun isInitialized(): Boolean =
         helper.readableDatabase.rawQuery("SELECT 1 FROM $META WHERE id = 1", null).use { it.moveToFirst() }
 
     /** Persiste/atualiza a linha única de metadados (setup inicial). */
-    fun saveMeta(meta: VaultMeta) {
+    override fun saveMeta(meta: VaultMeta) {
         val values = ContentValues().apply {
             put("id", 1)
             put(META_SCHEME, meta.schemeVersion)
@@ -37,7 +39,7 @@ class VaultRepository(context: Context) {
         helper.writableDatabase.insertWithOnConflict(META, null, values, SQLiteDatabase.CONFLICT_REPLACE)
     }
 
-    fun loadMeta(): VaultMeta? =
+    override fun loadMeta(): VaultMeta? =
         helper.readableDatabase.query(META, null, "id = 1", null, null, null, null).use { c ->
             if (!c.moveToFirst()) return null
             VaultMeta(
@@ -49,7 +51,7 @@ class VaultRepository(context: Context) {
         }
 
     /** Tarefa 3.4 (troca de senha): re-grava apenas a DEK cifrada, sem tocar nas entradas. */
-    fun updateWrappedDek(wrappedDek: ByteArray) {
+    override fun updateWrappedDek(wrappedDek: ByteArray) {
         val values = ContentValues().apply { put(META_WRAPPED_DEK, wrappedDek) }
         helper.writableDatabase.update(META, values, "id = 1", null)
     }
