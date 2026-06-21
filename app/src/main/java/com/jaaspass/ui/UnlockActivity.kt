@@ -130,6 +130,12 @@ class UnlockActivity : SecureActivity() {
 
     /** Envelopa a DEK atual com a chave do Keystore liberada pela biometria e persiste (spec ativação). */
     private fun enableBiometric() {
+        // A sessão pode ter sido bloqueada (auto-lock em background) com o diálogo de oferta aberto.
+        // Sem a DEK em memória não há o que envelopar — segue para o desbloqueio sem ativar.
+        if (session.state != VaultSession.State.UNLOCKED) {
+            toast("Sessão bloqueada. Tente ativar a biometria após desbloquear.")
+            recreate(); return
+        }
         val cipher = try {
             keyStore.cipherForEncrypt()
         } catch (e: Exception) {
