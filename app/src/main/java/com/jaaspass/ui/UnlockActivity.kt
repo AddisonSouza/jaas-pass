@@ -35,7 +35,7 @@ class UnlockActivity : SecureActivity() {
                 }
             })
         }
-        setContentView(Theme.screen(this).apply { addView(card) })
+        setContentView(Theme.screen(this, card))
     }
 
     private fun buildSetup() {
@@ -66,7 +66,7 @@ class UnlockActivity : SecureActivity() {
                 }
             })
         }
-        setContentView(Theme.screen(this).apply { addView(card) })
+        setContentView(Theme.screen(this, card))
     }
 
     private fun warning() = Theme.bodyText(

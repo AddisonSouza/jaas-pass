@@ -35,7 +35,7 @@ class AddEditActivity : SecureActivity() {
             addView(passField.view)
             addView(Theme.primaryButton(this@AddEditActivity, "Salvar").apply { setOnClickListener { save() } })
         }
-        setContentView(Theme.screen(this).apply { addView(card) })
+        setContentView(Theme.screen(this, card))
     }
 
     override fun onResume() {

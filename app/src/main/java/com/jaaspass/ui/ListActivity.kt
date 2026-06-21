@@ -36,11 +36,19 @@ class ListActivity : SecureActivity() {
                 layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
             })
             addView(Theme.secondaryButton(this@ListActivity, "Bloquear").apply {
+                // No header (horizontal), o botão não deve esticar; sobrescreve a largura padrão.
+                layoutParams = LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
+                ).apply { leftMargin = dp(8) }
                 setOnClickListener { lockAndExit() }
             })
         }
 
+        // Cartão ocupa a altura toda; o ListView recebe peso para rolar internamente.
         val card = Theme.card(this).apply {
+            layoutParams = (layoutParams as LinearLayout.LayoutParams).apply {
+                height = ViewGroup.LayoutParams.MATCH_PARENT
+            }
             addView(header)
             addView(Theme.primaryButton(this@ListActivity, "+ Adicionar").apply {
                 setOnClickListener {
@@ -48,9 +56,11 @@ class ListActivity : SecureActivity() {
                 }
             })
             addView(empty)
-            addView(listView)
+            addView(listView, LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f,
+            ))
         }
-        setContentView(Theme.screen(this).apply { addView(card) })
+        setContentView(Theme.staticScreen(this, card))
 
         listView.setOnItemClickListener { _, _, pos, _ ->
             startActivity(

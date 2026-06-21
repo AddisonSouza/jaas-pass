@@ -44,7 +44,7 @@ class DetailActivity : SecureActivity() {
             })
             addView(Theme.secondaryButton(this@DetailActivity, "Excluir", destructive = true).apply { setOnClickListener { confirmDelete() } })
         }
-        setContentView(Theme.screen(this).apply { addView(card) })
+        setContentView(Theme.screen(this, card))
     }
 
     override fun onResume() {

@@ -7,10 +7,12 @@ import android.graphics.drawable.GradientDrawable
 import android.text.InputType
 import android.util.TypedValue
 import android.view.Gravity
+import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 
 /**
@@ -49,30 +51,61 @@ object Theme {
         if (stroke != null) setStroke(dp(context, 1), stroke)
     }
 
-    /** Container que pinta o fundo da janela e centraliza um cartão de largura máxima. */
-    fun screen(context: Context): LinearLayout = LinearLayout(context).apply {
+    private const val MATCH = ViewGroup.LayoutParams.MATCH_PARENT
+    private const val WRAP = ViewGroup.LayoutParams.WRAP_CONTENT
+
+    /**
+     * Largura responsiva do cartão: preenche a tela (menos o padding) no celular e só é
+     * limitada a [CARD_MAX_WIDTH] em telas largas (tablet). Evita corte lateral.
+     */
+    private fun cardWidth(context: Context): Int {
+        val available = context.resources.displayMetrics.widthPixels - 2 * dp(context, SPACE * 2)
+        val maxPx = dp(context, CARD_MAX_WIDTH)
+        return if (available <= maxPx) MATCH else maxPx
+    }
+
+    /**
+     * Tela rolável (forms): fundo escuro + [content] centralizado dentro de um `ScrollView`,
+     * para que conteúdo mais alto que a tela role em vez de cortar. Use em telas de formulário.
+     */
+    fun screen(context: Context, content: View): ScrollView {
+        val holder = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+            val pad = dp(context, SPACE * 2)
+            setPadding(pad, pad, pad, pad)
+            layoutParams = ViewGroup.LayoutParams(MATCH, WRAP)
+            addView(content)
+        }
+        return ScrollView(context).apply {
+            setBackgroundColor(windowBg)
+            isFillViewport = true
+            layoutParams = ViewGroup.LayoutParams(MATCH, MATCH)
+            addView(holder)
+        }
+    }
+
+    /**
+     * Tela estática de altura cheia (ex.: lista que rola internamente). [content] é adicionado
+     * a um container que ocupa toda a tela; o próprio conteúdo gerencia sua rolagem.
+     */
+    fun staticScreen(context: Context, content: View): LinearLayout = LinearLayout(context).apply {
         orientation = LinearLayout.VERTICAL
         gravity = Gravity.CENTER_HORIZONTAL
         setBackgroundColor(windowBg)
         val pad = dp(context, SPACE * 2)
         setPadding(pad, pad, pad, pad)
-        layoutParams = ViewGroup.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT,
-        )
+        layoutParams = ViewGroup.LayoutParams(MATCH, MATCH)
+        addView(content)
     }
 
-    /** Cartão central arredondado, com largura máxima, onde o conteúdo da tela é montado. */
+    /** Cartão arredondado, com largura responsiva, onde o conteúdo da tela é montado. */
     fun card(context: Context): LinearLayout = LinearLayout(context).apply {
         orientation = LinearLayout.VERTICAL
         background = roundedBg(context, surface)
         val pad = dp(context, SPACE + SPACE / 2)
         setPadding(pad, pad, pad, pad)
-        layoutParams = LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT,
-        ).apply {
-            // Largura máxima: o LinearLayout pai (screen) centraliza horizontalmente.
-            width = dp(context, CARD_MAX_WIDTH)
-        }
+        layoutParams = LinearLayout.LayoutParams(cardWidth(context), WRAP)
     }
 
     fun titleText(context: Context, text: String): TextView = TextView(context).apply {
