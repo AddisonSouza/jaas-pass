@@ -29,6 +29,16 @@ private fun assert(cond: Boolean, msg: String) {
     if (!cond) throw AssertionError(msg)
 }
 
+/** True se [needle] aparece como subsequência contígua de [haystack]. */
+private fun containsSubsequence(haystack: ByteArray, needle: ByteArray): Boolean {
+    if (needle.isEmpty() || needle.size > haystack.size) return false
+    outer@ for (i in 0..haystack.size - needle.size) {
+        for (j in needle.indices) if (haystack[i + j] != needle[j]) continue@outer
+        return true
+    }
+    return false
+}
+
 fun main() {
     println("== CryptoManager self-test ==")
 
@@ -83,6 +93,14 @@ fun main() {
             threw = true
         }
         assert(threw, "blob adulterado deveria falhar na verificação da tag")
+    }
+
+    test("nenhum plaintext vaza no blob cifrado (suporte à task 2.2)") {
+        val dek = crypto.generateDEK()
+        val plaintext = "super-secreta-123".toByteArray()
+        val blob = crypto.encryptField(plaintext, dek)
+        assert(!containsSubsequence(blob, plaintext), "o plaintext aparece no blob cifrado")
+        // o salt/iterações/versão são metadados não sensíveis; só o ciphertext+nonce é persistido.
     }
 
     val failed = results.count { !it.second }

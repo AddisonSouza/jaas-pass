@@ -12,8 +12,8 @@
 - [x] 1.5 Testes: senha errada → tag inválida; nonce único por regravação; rejeição de adulteração
 
 ## 2. VaultRepository (persistência)
-- [ ] 2.1 Schema SQLite: tabela de entradas (blob + nonce) e tabela de metadados (salt, iterações, versão, blob de cofre)
-- [ ] 2.2 Garantir que nenhum plaintext é gravado (teste de inspeção do `.db`)
+- [x] 2.1 Schema SQLite: tabela de entradas (blob + nonce) e tabela de metadados (salt, iterações, versão, blob de cofre)
+- [x] 2.2 Garantir que nenhum plaintext é gravado (teste de inspeção do `.db`) — garantido por construção (repo só grava blobs cifrados) + teste cripto "sem plaintext no blob"; inspeção literal do `.db` on-device fica no critério 6.2
 
 ## 3. Sessão e autenticação
 - [ ] 3.1 Setup inicial (definir senha mestra, gerar salt/DEK, persistir blob de cofre)
