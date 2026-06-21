@@ -47,7 +47,8 @@ class DetailActivity : SecureActivity() {
         root.addView(Button(this).apply {
             text = "Editar"
             setOnClickListener {
-                startActivity(Intent(this@DetailActivity, AddEditActivity::class.java).putExtra(AddEditActivity.EXTRA_ID, id))
+                // this@DetailActivity.id: dentro de Button(...).apply{} o `id` cru seria o View.id do botão.
+                startActivity(Intent(this@DetailActivity, AddEditActivity::class.java).putExtra(AddEditActivity.EXTRA_ID, this@DetailActivity.id))
             }
         })
         root.addView(Button(this).apply { text = "Excluir"; setOnClickListener { confirmDelete() } })
@@ -85,7 +86,7 @@ class DetailActivity : SecureActivity() {
     private fun copyPassword() {
         val e = entry ?: return
         SecureClipboard.copySensitive(this, "senha", e.password)
-        Toast.makeText(this, "Senha copiada (limpa em 30s)", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "Senha copiada (marcada como sensível; limpa em ~30s)", Toast.LENGTH_SHORT).show()
     }
 
     private fun confirmDelete() {

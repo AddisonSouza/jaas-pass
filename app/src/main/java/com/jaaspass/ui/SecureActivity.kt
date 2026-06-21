@@ -29,6 +29,12 @@ abstract class SecureActivity : Activity() {
         if (session.state == VaultSession.State.UNLOCKED) session.touch()
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Limpa o clipboard sensível ao voltar ao primeiro plano (o timer pode não rodar em background).
+        SecureClipboard.onForeground(this)
+    }
+
     /** Converte dp em px. */
     protected fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 }

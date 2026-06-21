@@ -37,7 +37,8 @@ class AddEditActivity : SecureActivity() {
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT,
             )
             addView(TextView(this@AddEditActivity).apply {
-                text = if (id >= 0) "Editar entrada" else "Nova entrada"
+                // this@AddEditActivity.id: dentro de TextView(...).apply{} o `id` cru seria o View.id.
+                text = if (this@AddEditActivity.id >= 0) "Editar entrada" else "Nova entrada"
                 textSize = 22f; setPadding(0, 0, 0, dp(12))
             })
             addView(labelField)
