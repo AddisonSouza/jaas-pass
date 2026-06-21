@@ -218,6 +218,9 @@ class PasswordField(
         toggle.setOnClickListener { setRevealed(!revealed) }
     }
 
+    /** Revela o conteúdo (usado ao gerar uma senha, para conferência). */
+    fun reveal() = setRevealed(true)
+
     private fun setRevealed(reveal: Boolean) {
         revealed = reveal
         // Salvar seleção e fonte: trocar inputType reseta o cursor e pode forçar fonte monoespaçada.
