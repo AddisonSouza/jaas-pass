@@ -28,11 +28,11 @@
 - [x] 4.4 Adicionar entrada
 
 ## 5. Endurecimento de plataforma
-- [ ] 5.1 Manifesto sem permissão `INTERNET`
-- [ ] 5.2 `android:allowBackup="false"`
-- [ ] 5.3 `FLAG_SECURE` na janela
-- [ ] 5.4 Clipboard com auto-limpeza (~30 s) + `EXTRA_IS_SENSITIVE` (Android 13+)
-- [ ] 5.5 Revisar ausência de logs de segredos (inclusive build de debug)
+- [x] 5.1 Manifesto sem permissão `INTERNET`
+- [x] 5.2 `android:allowBackup="false"`
+- [x] 5.3 `FLAG_SECURE` na janela (via `SecureActivity` base, em todas as telas)
+- [x] 5.4 Clipboard com auto-limpeza (~30 s) + `EXTRA_IS_SENSITIVE` (Android 13+)
+- [x] 5.5 Revisar ausência de logs de segredos (inclusive build de debug) — nenhum Log/print no código de produção; `PlainEntry.toString()` redige a senha
 
 ## 6. Validação final (critérios de aceitação)
 - [ ] 6.1 Build sem nenhuma dependência de terceiros no Gradle

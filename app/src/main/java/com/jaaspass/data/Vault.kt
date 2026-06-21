@@ -17,7 +17,10 @@ class Vault(
     data class EntrySummary(val id: Long, val label: String)
 
     /** Entrada completa decriptada (uso transitório na tela de detalhe/edição). */
-    data class PlainEntry(val id: Long, val label: String, val username: String?, val password: String)
+    data class PlainEntry(val id: Long, val label: String, val username: String?, val password: String) {
+        /** Tarefa 5.5 — nunca expor a senha em logs/stacktraces acidentalmente. */
+        override fun toString(): String = "PlainEntry(id=$id, label=$label, username=$username, password=***)"
+    }
 
     fun add(label: String, username: String?, password: String): Long {
         val dek = session.requireDek()

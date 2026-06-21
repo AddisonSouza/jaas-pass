@@ -1,9 +1,6 @@
 package com.jaaspass.ui
 
 import android.app.AlertDialog
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.ViewGroup
@@ -87,9 +84,8 @@ class DetailActivity : SecureActivity() {
 
     private fun copyPassword() {
         val e = entry ?: return
-        val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        cm.setPrimaryClip(ClipData.newPlainText("senha", e.password))
-        Toast.makeText(this, "Senha copiada", Toast.LENGTH_SHORT).show()
+        SecureClipboard.copySensitive(this, "senha", e.password)
+        Toast.makeText(this, "Senha copiada (limpa em 30s)", Toast.LENGTH_SHORT).show()
     }
 
     private fun confirmDelete() {
