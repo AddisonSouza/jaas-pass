@@ -36,4 +36,4 @@
 ## 7. Verificação de integração
 
 - [x] 7.1 Conferir que trocar a senha mestra com biometria ativa não quebra o atalho (envelope cifra a DEK, não a KEK). Valida *Troca de senha não quebra o atalho biométrico*.
-- [ ] 7.2 Smoke manual no aparelho (sideload APK debug): setup → ativar biometria → auto-lock → desbloquear por biometria → desbloquear por senha (fallback) → desativar. Confere o fluxo fim a fim.
+- [x] 7.2 Smoke manual no aparelho (sideload APK debug): setup → ativar biometria → auto-lock → desbloquear por biometria → desbloquear por senha (fallback) → desativar. Confere o fluxo fim a fim.
