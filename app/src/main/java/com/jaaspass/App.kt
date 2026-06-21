@@ -23,11 +23,14 @@ class App : Application() {
     lateinit var vault: Vault
         private set
 
+    lateinit var repo: VaultRepository
+        private set
+
     private var startedActivities = 0
 
     override fun onCreate() {
         super.onCreate()
-        val repo = VaultRepository(this)
+        repo = VaultRepository(this)
         session = VaultSession(repo)
         vault = Vault(repo, session)
         registerActivityLifecycleCallbacks(AutoLockCallbacks())
@@ -61,5 +64,8 @@ class App : Application() {
 
         /** Acesso à fachada do cofre a partir de uma Activity. */
         fun vault(activity: Activity): Vault = (activity.application as App).vault
+
+        /** Acesso ao repositório (material biométrico) a partir de uma Activity. */
+        fun repo(activity: Activity): VaultRepository = (activity.application as App).repo
     }
 }

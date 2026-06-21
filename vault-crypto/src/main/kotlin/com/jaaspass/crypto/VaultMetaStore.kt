@@ -13,4 +13,14 @@ interface VaultMetaStore {
      * atômica — não toca nas entradas. O salt é rotacionado a cada troca.
      */
     fun updateAuthMaterial(salt: ByteArray, wrappedDek: ByteArray)
+
+    /**
+     * Grava o envelope biométrico da DEK (ativar biometria), sem tocar em salt/wrappedDek.
+     * @param wrappedDek DEK cifrada pela chave do Keystore.
+     * @param iv IV do GCM correspondente.
+     */
+    fun saveBiometricMaterial(wrappedDek: ByteArray, iv: ByteArray)
+
+    /** Remove o envelope biométrico (desativar biometria / chave invalidada). */
+    fun clearBiometricMaterial()
 }

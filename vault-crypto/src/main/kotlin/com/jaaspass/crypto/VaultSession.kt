@@ -64,6 +64,22 @@ class VaultSession(
         }
     }
 
+    /**
+     * Biometria (change biometric-unlock) — expõe a DEK atual para ser envelopada pela chave do
+     * Keystore na ativação. Exige sessão DESBLOQUEADA. A DEK não é copiada/zerada aqui: o caller
+     * (camada Android) apenas a cifra e descarta a referência logo em seguida.
+     */
+    fun exportDekForBiometric(): SecretKey = requireDek()
+
+    /**
+     * Biometria (change biometric-unlock) — desbloqueio por DEK já decifrada pela chave do
+     * Keystore (via BiometricPrompt), sem PBKDF2/senha mestra. Deixa a sessão DESBLOQUEADA.
+     */
+    fun unlockWithDek(decryptedDek: SecretKey) {
+        dek = decryptedDek
+        touch()
+    }
+
     /** Tarefa 3.3 — Bloqueio: descarta a DEK da memória. */
     fun lock() {
         // Nota (design): SecretKeySpec copia o array internamente e não é trivialmente apagável;
