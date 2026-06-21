@@ -28,6 +28,16 @@ tasks.register<JavaExec>("cryptoSelfTest") {
     classpath = sourceSets["test"].runtimeClasspath
 }
 
+// Change "generate-strong-password" — roda os self-tests do PasswordGenerator (mesmo harness,
+// zero deps).  ./gradlew :vault-crypto:passwordGenSelfTest
+tasks.register<JavaExec>("passwordGenSelfTest") {
+    group = "verification"
+    description = "Executa os self-tests do PasswordGenerator (harness próprio, zero deps)."
+    dependsOn("testClasses")
+    mainClass.set("com.jaaspass.crypto.PasswordGeneratorSelfTestKt")
+    classpath = sourceSets["test"].runtimeClasspath
+}
+
 // Validação 6.2/6.3 — emite SQL (esquema do VaultRepository + blobs reais) para montar um .db
 // inspecionável com o sqlite3 do platform-tools.
 tasks.register<JavaExec>("vaultDbProbe") {

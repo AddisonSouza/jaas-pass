@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.text.InputType
 import android.widget.EditText
 import android.widget.Toast
+import com.jaaspass.crypto.PasswordGenerator
 import com.jaaspass.crypto.VaultSession
 
 /**
@@ -33,6 +34,7 @@ class AddEditActivity : SecureActivity() {
             addView(labelField)
             addView(userField)
             addView(passField.view)
+            addView(Theme.secondaryButton(this@AddEditActivity, "Gerar senha").apply { setOnClickListener { generatePassword() } })
             addView(Theme.primaryButton(this@AddEditActivity, "Salvar").apply { setOnClickListener { save() } })
         }
         setContentView(Theme.screen(this, card))
@@ -55,6 +57,14 @@ class AddEditActivity : SecureActivity() {
     }
 
     private fun field(hint: String, type: Int) = Theme.input(this, hint, type)
+
+    /** Gera uma senha forte (change "generate-strong-password"), preenche o campo e a revela. */
+    private fun generatePassword() {
+        val chars = PasswordGenerator().generate()
+        passField.edit.setText(String(chars))
+        passField.edit.setSelection(passField.edit.length())
+        passField.reveal() // exibe para conferência antes de salvar
+    }
 
     private fun save() {
         val label = labelField.text.toString().trim()
