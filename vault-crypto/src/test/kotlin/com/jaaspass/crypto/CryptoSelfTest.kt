@@ -44,8 +44,8 @@ private class FakeStore : VaultMetaStore {
     private var meta: VaultMeta? = null
     override fun loadMeta(): VaultMeta? = meta
     override fun saveMeta(meta: VaultMeta) { this.meta = meta }
-    override fun updateWrappedDek(wrappedDek: ByteArray) {
-        meta = (meta ?: error("sem meta")).copy(wrappedDek = wrappedDek)
+    override fun updateAuthMaterial(salt: ByteArray, wrappedDek: ByteArray) {
+        meta = (meta ?: error("sem meta")).copy(salt = salt, wrappedDek = wrappedDek)
     }
 }
 
@@ -136,7 +136,8 @@ fun main() {
     }
 
     test("sessão: troca de senha preserva os dados (3.4)") {
-        val s = VaultSession(FakeStore(), crypto, iterations = ITER)
+        val store = FakeStore()
+        val s = VaultSession(store, crypto, iterations = ITER)
         s.setup("velha".toCharArray())
         val secret = "dado-importante".toByteArray()
         val blob = crypto.encryptField(secret, s.requireDek()) // cifrado com a DEK atual
@@ -146,6 +147,30 @@ fun main() {
         assert(!s.unlock("velha".toCharArray()), "senha velha não deveria desbloquear após a troca")
         assert(s.unlock("nova".toCharArray()), "senha nova deveria desbloquear")
         assert(crypto.decryptField(blob, s.requireDek()).contentEquals(secret), "dado deveria continuar íntegro")
+    }
+
+    test("sessão: troca de senha rotaciona o salt (rotate-salt)") {
+        val store = FakeStore()
+        val s = VaultSession(store, crypto, iterations = ITER)
+        s.setup("velha".toCharArray())
+        val saltAntes = store.loadMeta()!!.salt.copyOf()
+        assert(s.changeMasterPassword("velha".toCharArray(), "nova".toCharArray()), "troca deveria funcionar")
+        val saltDepois = store.loadMeta()!!.salt
+        assert(!saltAntes.contentEquals(saltDepois), "o salt deveria ser rotacionado na troca de senha")
+        s.lock()
+        assert(s.unlock("nova".toCharArray()), "nova senha deveria desbloquear com o salt novo")
+    }
+
+    test("sessão: senha atual incorreta não altera o material (rotate-salt)") {
+        val store = FakeStore()
+        val s = VaultSession(store, crypto, iterations = ITER)
+        s.setup("velha".toCharArray())
+        val saltAntes = store.loadMeta()!!.salt.copyOf()
+        val wrappedAntes = store.loadMeta()!!.wrappedDek.copyOf()
+        assert(!s.changeMasterPassword("errada".toCharArray(), "nova".toCharArray()), "senha atual errada não deveria trocar")
+        val metaDepois = store.loadMeta()!!
+        assert(saltAntes.contentEquals(metaDepois.salt), "salt não deveria mudar com a senha atual errada")
+        assert(wrappedAntes.contentEquals(metaDepois.wrappedDek), "wrappedDek não deveria mudar com a senha atual errada")
     }
 
     test("sessão: auto-lock por timeout de inatividade (3.3)") {

@@ -8,6 +8,9 @@ package com.jaaspass.crypto
 interface VaultMetaStore {
     fun loadMeta(): VaultMeta?
     fun saveMeta(meta: VaultMeta)
-    /** Re-grava apenas a DEK cifrada (troca de senha) — não toca nas entradas. */
-    fun updateWrappedDek(wrappedDek: ByteArray)
+    /**
+     * Re-grava o material de autenticação (salt + DEK cifrada) na troca de senha, de forma
+     * atômica — não toca nas entradas. O salt é rotacionado a cada troca.
+     */
+    fun updateAuthMaterial(salt: ByteArray, wrappedDek: ByteArray)
 }

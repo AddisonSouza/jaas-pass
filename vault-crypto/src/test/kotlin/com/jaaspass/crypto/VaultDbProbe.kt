@@ -15,8 +15,8 @@ private class MemStore : VaultMetaStore {
     private var meta: VaultMeta? = null
     override fun loadMeta(): VaultMeta? = meta
     override fun saveMeta(meta: VaultMeta) { this.meta = meta }
-    override fun updateWrappedDek(wrappedDek: ByteArray) {
-        meta = (meta ?: error("sem meta")).copy(wrappedDek = wrappedDek)
+    override fun updateAuthMaterial(salt: ByteArray, wrappedDek: ByteArray) {
+        meta = (meta ?: error("sem meta")).copy(salt = salt, wrappedDek = wrappedDek)
     }
 }
 
