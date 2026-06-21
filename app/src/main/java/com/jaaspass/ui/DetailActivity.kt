@@ -3,9 +3,7 @@ package com.jaaspass.ui
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
-import android.view.ViewGroup
 import android.widget.Button
-import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import com.jaaspass.crypto.VaultSession
@@ -29,30 +27,24 @@ class DetailActivity : SecureActivity() {
         super.onCreate(savedInstanceState)
         id = intent.getLongExtra(EXTRA_ID, -1)
 
-        val root = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(dp(16), dp(16), dp(16), dp(16))
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT,
-            )
-        }
-        passwordView = TextView(this).apply { textSize = 18f; setPadding(0, dp(8), 0, dp(8)) }
-        toggle = Button(this).apply { text = "Mostrar"; setOnClickListener { toggleReveal() } }
+        passwordView = Theme.bodyText(this, "").apply { textSize = 18f }
+        toggle = Theme.secondaryButton(this, "Mostrar").apply { setOnClickListener { toggleReveal() } }
 
-        root.addView(labelView())
-        root.addView(usernameView())
-        root.addView(passwordView)
-        root.addView(toggle)
-        root.addView(Button(this).apply { text = "Copiar senha"; setOnClickListener { copyPassword() } })
-        root.addView(Button(this).apply {
-            text = "Editar"
-            setOnClickListener {
-                // this@DetailActivity.id: dentro de Button(...).apply{} o `id` cru seria o View.id do botão.
-                startActivity(Intent(this@DetailActivity, AddEditActivity::class.java).putExtra(AddEditActivity.EXTRA_ID, this@DetailActivity.id))
-            }
-        })
-        root.addView(Button(this).apply { text = "Excluir"; setOnClickListener { confirmDelete() } })
-        setContentView(root)
+        val card = Theme.card(this).apply {
+            addView(labelView())
+            addView(usernameView())
+            addView(passwordView)
+            addView(toggle)
+            addView(Theme.primaryButton(this@DetailActivity, "Copiar senha").apply { setOnClickListener { copyPassword() } })
+            addView(Theme.secondaryButton(this@DetailActivity, "Editar").apply {
+                setOnClickListener {
+                    // this@DetailActivity.id: dentro de apply{} o `id` cru seria o View.id do botão.
+                    startActivity(Intent(this@DetailActivity, AddEditActivity::class.java).putExtra(AddEditActivity.EXTRA_ID, this@DetailActivity.id))
+                }
+            })
+            addView(Theme.secondaryButton(this@DetailActivity, "Excluir", destructive = true).apply { setOnClickListener { confirmDelete() } })
+        }
+        setContentView(Theme.screen(this).apply { addView(card) })
     }
 
     override fun onResume() {
@@ -68,8 +60,8 @@ class DetailActivity : SecureActivity() {
         render()
     }
 
-    private val labelTv by lazy { TextView(this).apply { textSize = 22f; setPadding(0, 0, 0, dp(8)) } }
-    private val userTv by lazy { TextView(this).apply { setPadding(0, 0, 0, dp(8)) } }
+    private val labelTv by lazy { Theme.titleText(this, "") }
+    private val userTv by lazy { Theme.bodyText(this, "", muted = true) }
     private fun labelView() = labelTv
     private fun usernameView() = userTv
 
