@@ -1,0 +1,45 @@
+schema: spec-driven
+profile: standard
+
+pr:
+  enabled: true
+  branch:
+    pattern: feat/{change-name}
+  title:
+    template: "[{type}] {change-name}"
+  description:
+    template: |
+      ## O que foi feito
+
+
+      ## Como testar
+
+
+      ## Referências
+  comments:
+    linkInTask: true
+
+context: |
+  Projeto: jaas-pass — gerenciador de senhas pessoal 100% offline para Android.
+  Stack: Android nativo em Kotlin. compileSdk/targetSdk 35, minSdk 26.
+  Build: Gradle 8.9 (wrapper) + AGP 8.7.3 + JDK 21. SDK em ~/Android/Sdk.
+  Comando de build: ./gradlew :app:assembleDebug (APK debug p/ sideload; sem emulador).
+
+  CONSTRAINTS INEGOCIÁVEIS (do design):
+  1. ZERO dependências de terceiros no Gradle — apenas SDK Android (android.*, java.*,
+     javax.crypto.*) + Kotlin stdlib. SEM AndroidX/Jetpack/Material; usar android.app.Activity
+     e temas @android:style.
+  2. Offline absoluto: manifesto NÃO declara permissão INTERNET. Nenhuma chamada de rede.
+  3. Senha mestra nunca persistida (nem texto, nem hash reversível).
+  4. AEAD sempre (AES-256-GCM); verificar integridade antes de qualquer uso.
+  5. Falha segura: erro de decriptação/tag inválida nega acesso sem vazar a causa.
+  6. Cripto: PBKDF2-HMAC-SHA256 (≥600k iterações, versionado) p/ KEK; envelope KEK/DEK;
+     nonce único de 12 bytes por operação via SecureRandom.
+
+  Em QUALQUER ambiguidade de segurança, escolher a opção mais conservadora.
+
+# Per-artifact rules (optional)
+rules:
+  tasks:
+    - Cada task deve validar os cenários (Scenario) das specs correspondentes.
+    - Não introduzir dependências de teste de terceiros sem justificar; preferir kotlin.test.
