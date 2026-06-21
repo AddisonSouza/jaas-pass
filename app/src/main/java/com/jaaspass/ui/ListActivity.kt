@@ -6,7 +6,6 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
-import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ListView
 import android.widget.TextView
@@ -28,41 +27,40 @@ class ListActivity : SecureActivity() {
         super.onCreate(savedInstanceState)
 
         listView = ListView(this)
-        empty = TextView(this).apply {
-            text = "Nenhuma entrada ainda. Toque em “Adicionar”."
-            setPadding(dp(8), dp(16), dp(8), dp(16))
-        }
+        empty = Theme.bodyText(this, "Nenhuma entrada ainda. Toque em “Adicionar”.", muted = true)
 
         val header = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
-            addView(TextView(this@ListActivity).apply {
-                text = "Cofre"; textSize = 22f
+            gravity = Gravity.CENTER_VERTICAL
+            addView(Theme.titleText(this@ListActivity, "Cofre").apply {
                 layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
-                gravity = Gravity.CENTER_VERTICAL
             })
-            addView(Button(this@ListActivity).apply {
-                text = "Bloquear"
+            addView(Theme.secondaryButton(this@ListActivity, "Bloquear").apply {
+                // No header (horizontal), o botão não deve esticar; sobrescreve a largura padrão.
+                layoutParams = LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
+                ).apply { leftMargin = dp(8) }
                 setOnClickListener { lockAndExit() }
             })
         }
 
-        val root = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(dp(16), dp(16), dp(16), dp(16))
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT,
-            )
+        // Cartão ocupa a altura toda; o ListView recebe peso para rolar internamente.
+        val card = Theme.card(this).apply {
+            layoutParams = (layoutParams as LinearLayout.LayoutParams).apply {
+                height = ViewGroup.LayoutParams.MATCH_PARENT
+            }
             addView(header)
-            addView(Button(this@ListActivity).apply {
-                text = "+ Adicionar"
+            addView(Theme.primaryButton(this@ListActivity, "+ Adicionar").apply {
                 setOnClickListener {
                     startActivity(Intent(this@ListActivity, AddEditActivity::class.java))
                 }
             })
             addView(empty)
-            addView(listView)
+            addView(listView, LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f,
+            ))
         }
-        setContentView(root)
+        setContentView(Theme.staticScreen(this, card))
 
         listView.setOnItemClickListener { _, _, pos, _ ->
             startActivity(

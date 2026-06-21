@@ -3,11 +3,7 @@ package com.jaaspass.ui
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
-import android.view.ViewGroup
-import android.widget.Button
 import android.widget.EditText
-import android.widget.LinearLayout
-import android.widget.TextView
 import android.widget.Toast
 import com.jaaspass.crypto.VaultSession
 
@@ -20,7 +16,7 @@ class AddEditActivity : SecureActivity() {
     private var id: Long = -1
     private lateinit var labelField: EditText
     private lateinit var userField: EditText
-    private lateinit var passField: EditText
+    private lateinit var passField: PasswordField
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,25 +24,18 @@ class AddEditActivity : SecureActivity() {
 
         labelField = field("Serviço / rótulo", InputType.TYPE_CLASS_TEXT)
         userField = field("Usuário (opcional)", InputType.TYPE_CLASS_TEXT)
-        passField = field("Senha", InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD)
+        // Senha agora nasce mascarada, com olho de mostrar/ocultar (antes: VISIBLE_PASSWORD sempre visível).
+        passField = Theme.passwordField(this, "Senha")
 
-        val root = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(dp(16), dp(16), dp(16), dp(16))
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT,
-            )
-            addView(TextView(this@AddEditActivity).apply {
-                // this@AddEditActivity.id: dentro de TextView(...).apply{} o `id` cru seria o View.id.
-                text = if (this@AddEditActivity.id >= 0) "Editar entrada" else "Nova entrada"
-                textSize = 22f; setPadding(0, 0, 0, dp(12))
-            })
+        val title = if (id >= 0) "Editar entrada" else "Nova entrada"
+        val card = Theme.card(this).apply {
+            addView(Theme.titleText(this@AddEditActivity, title))
             addView(labelField)
             addView(userField)
-            addView(passField)
-            addView(Button(this@AddEditActivity).apply { text = "Salvar"; setOnClickListener { save() } })
+            addView(passField.view)
+            addView(Theme.primaryButton(this@AddEditActivity, "Salvar").apply { setOnClickListener { save() } })
         }
-        setContentView(root)
+        setContentView(Theme.screen(this, card))
     }
 
     override fun onResume() {
@@ -60,20 +49,17 @@ class AddEditActivity : SecureActivity() {
             vault.detail(id)?.let {
                 labelField.setText(it.label)
                 userField.setText(it.username ?: "")
-                passField.setText(it.password)
+                passField.edit.setText(it.password)
             }
         }
     }
 
-    private fun field(hint: String, type: Int) = EditText(this).apply {
-        this.hint = hint
-        inputType = type
-    }
+    private fun field(hint: String, type: Int) = Theme.input(this, hint, type)
 
     private fun save() {
         val label = labelField.text.toString().trim()
         val user = userField.text.toString().trim().ifEmpty { null }
-        val pass = passField.text.toString()
+        val pass = passField.edit.text.toString()
         if (label.isEmpty() || pass.isEmpty()) {
             Toast.makeText(this, "Rótulo e senha são obrigatórios", Toast.LENGTH_SHORT).show()
             return
