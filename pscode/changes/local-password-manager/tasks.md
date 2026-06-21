@@ -5,11 +5,11 @@
 > mais conservadora.
 
 ## 1. CryptoManager (núcleo) + testes
-- [ ] 1.1 `deriveKEK(masterPassword: CharArray, salt, iterations)` com PBKDF2-HMAC-SHA256
-- [ ] 1.2 `generateDEK()` e wrap/unwrap da DEK com AES-256-GCM (KEK)
-- [ ] 1.3 `encryptField` / `decryptField` com AES-256-GCM e nonce único de 12 bytes
-- [ ] 1.4 Zeragem de `CharArray`/`ByteArray` após uso (`Arrays.fill`)
-- [ ] 1.5 Testes: senha errada → tag inválida; nonce único por regravação; rejeição de adulteração
+- [x] 1.1 `deriveKEK(masterPassword: CharArray, salt, iterations)` com PBKDF2-HMAC-SHA256
+- [x] 1.2 `generateDEK()` e wrap/unwrap da DEK com AES-256-GCM (KEK)
+- [x] 1.3 `encryptField` / `decryptField` com AES-256-GCM e nonce único de 12 bytes
+- [x] 1.4 Zeragem de `CharArray`/`ByteArray` após uso (`Arrays.fill`)
+- [x] 1.5 Testes: senha errada → tag inválida; nonce único por regravação; rejeição de adulteração
 
 ## 2. VaultRepository (persistência)
 - [ ] 2.1 Schema SQLite: tabela de entradas (blob + nonce) e tabela de metadados (salt, iterações, versão, blob de cofre)
