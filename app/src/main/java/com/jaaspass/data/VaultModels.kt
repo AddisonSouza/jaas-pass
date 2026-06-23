@@ -12,6 +12,7 @@ data class EncryptedEntry(
     val label: ByteArray,
     val username: ByteArray?,
     val password: ByteArray,
+    val category: ByteArray?,
     val createdAt: Long,
     val updatedAt: Long,
 )

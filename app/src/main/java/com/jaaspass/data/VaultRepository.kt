@@ -91,12 +91,13 @@ class VaultRepository(context: Context) : VaultMetaStore {
 
     // --- Entradas (CRUD sobre blobs cifrados) ---
 
-    fun insertEntry(label: ByteArray, username: ByteArray?, password: ByteArray): Long {
+    fun insertEntry(label: ByteArray, username: ByteArray?, password: ByteArray, category: ByteArray?): Long {
         val now = System.currentTimeMillis()
         val values = ContentValues().apply {
             put(E_LABEL, label)
             if (username != null) put(E_USERNAME, username) else putNull(E_USERNAME)
             put(E_PASSWORD, password)
+            if (category != null) put(E_CATEGORY, category) else putNull(E_CATEGORY)
             put(E_CREATED, now)
             put(E_UPDATED, now)
         }
@@ -104,11 +105,12 @@ class VaultRepository(context: Context) : VaultMetaStore {
     }
 
     /** Atualiza os blobs (já re-cifrados com novo nonce pela camada cripto) e o timestamp. */
-    fun updateEntry(id: Long, label: ByteArray, username: ByteArray?, password: ByteArray) {
+    fun updateEntry(id: Long, label: ByteArray, username: ByteArray?, password: ByteArray, category: ByteArray?) {
         val values = ContentValues().apply {
             put(E_LABEL, label)
             if (username != null) put(E_USERNAME, username) else putNull(E_USERNAME)
             put(E_PASSWORD, password)
+            if (category != null) put(E_CATEGORY, category) else putNull(E_CATEGORY)
             put(E_UPDATED, System.currentTimeMillis())
         }
         helper.writableDatabase.update(ENTRIES, values, "$E_ID = ?", arrayOf(id.toString()))
@@ -134,6 +136,7 @@ class VaultRepository(context: Context) : VaultMetaStore {
         label = getBlob(getColumnIndexOrThrow(E_LABEL)),
         username = getColumnIndexOrThrow(E_USERNAME).let { if (isNull(it)) null else getBlob(it) },
         password = getBlob(getColumnIndexOrThrow(E_PASSWORD)),
+        category = getColumnIndexOrThrow(E_CATEGORY).let { if (isNull(it)) null else getBlob(it) },
         createdAt = getLong(getColumnIndexOrThrow(E_CREATED)),
         updatedAt = getLong(getColumnIndexOrThrow(E_UPDATED)),
     )
@@ -153,6 +156,8 @@ class VaultRepository(context: Context) : VaultMetaStore {
         const val E_LABEL = "label"
         const val E_USERNAME = "username"
         const val E_PASSWORD = "password"
+        // Categoria (change group-entries-by-category): blob cifrado nullable; NULL ≡ "Sem categoria".
+        const val E_CATEGORY = "category"
         const val E_CREATED = "created_at"
         const val E_UPDATED = "updated_at"
     }
@@ -182,6 +187,7 @@ class VaultRepository(context: Context) : VaultMetaStore {
                     $E_LABEL BLOB NOT NULL,
                     $E_USERNAME BLOB,
                     $E_PASSWORD BLOB NOT NULL,
+                    $E_CATEGORY BLOB,
                     $E_CREATED INTEGER NOT NULL,
                     $E_UPDATED INTEGER NOT NULL
                 )
@@ -196,13 +202,18 @@ class VaultRepository(context: Context) : VaultMetaStore {
                 db.execSQL("ALTER TABLE $META ADD COLUMN $META_BIO_DEK BLOB")
                 db.execSQL("ALTER TABLE $META ADD COLUMN $META_BIO_IV BLOB")
             }
+            // v2 -> v3 (change group-entries-by-category): coluna aditiva, nullable, da categoria
+            // cifrada. Cofres existentes seguem com a coluna NULL (grupo "Sem categoria").
+            if (oldVersion < 3) {
+                db.execSQL("ALTER TABLE $ENTRIES ADD COLUMN $E_CATEGORY BLOB")
+            }
             // O versionamento do esquema *cripto* fica em vault_meta.scheme_version,
             // independente da versão do schema SQLite.
         }
 
         companion object {
             const val DB_NAME = "vault.db"
-            const val DB_VERSION = 2
+            const val DB_VERSION = 3
         }
     }
 }

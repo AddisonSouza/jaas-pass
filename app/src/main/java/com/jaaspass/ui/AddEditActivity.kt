@@ -3,6 +3,8 @@ package com.jaaspass.ui
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import android.widget.EditText
 import android.widget.Toast
 import com.jaaspass.crypto.PasswordGenerator
@@ -17,6 +19,7 @@ class AddEditActivity : SecureActivity() {
     private var id: Long = -1
     private lateinit var labelField: EditText
     private lateinit var userField: EditText
+    private lateinit var categoryField: AutoCompleteTextView
     private lateinit var passField: PasswordField
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,6 +28,7 @@ class AddEditActivity : SecureActivity() {
 
         labelField = field("Serviço / rótulo", InputType.TYPE_CLASS_TEXT)
         userField = field("Usuário (opcional)", InputType.TYPE_CLASS_TEXT)
+        categoryField = Theme.autoCompleteField(this, "Categoria (opcional)")
         // Senha agora nasce mascarada, com olho de mostrar/ocultar (antes: VISIBLE_PASSWORD sempre visível).
         passField = Theme.passwordField(this, "Senha")
 
@@ -33,6 +37,7 @@ class AddEditActivity : SecureActivity() {
             addView(Theme.titleText(this@AddEditActivity, title))
             addView(labelField)
             addView(userField)
+            addView(categoryField)
             addView(passField.view)
             addView(Theme.secondaryButton(this@AddEditActivity, "Gerar senha").apply { setOnClickListener { generatePassword() } })
             addView(Theme.primaryButton(this@AddEditActivity, "Salvar").apply { setOnClickListener { save() } })
@@ -47,10 +52,15 @@ class AddEditActivity : SecureActivity() {
             finish()
             return
         }
+        // Sugestões = categorias já cadastradas (só com a sessão desbloqueada, após o guard acima).
+        categoryField.setAdapter(
+            ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, vault.categories()),
+        )
         if (id >= 0 && labelField.text.isEmpty()) {
             vault.detail(id)?.let {
                 labelField.setText(it.label)
                 userField.setText(it.username ?: "")
+                categoryField.setText(it.category ?: "")
                 passField.edit.setText(it.password)
             }
         }
@@ -69,12 +79,13 @@ class AddEditActivity : SecureActivity() {
     private fun save() {
         val label = labelField.text.toString().trim()
         val user = userField.text.toString().trim().ifEmpty { null }
+        val category = categoryField.text.toString().trim().ifEmpty { null }
         val pass = passField.edit.text.toString()
         if (label.isEmpty() || pass.isEmpty()) {
             Toast.makeText(this, "Rótulo e senha são obrigatórios", Toast.LENGTH_SHORT).show()
             return
         }
-        if (id >= 0) vault.update(id, label, user, pass) else vault.add(label, user, pass)
+        if (id >= 0) vault.update(id, label, user, pass, category) else vault.add(label, user, pass, category)
         finish()
     }
 

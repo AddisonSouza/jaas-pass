@@ -7,7 +7,6 @@ import android.text.TextWatcher
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.ListView
@@ -26,17 +25,17 @@ class ListActivity : SecureActivity() {
     private lateinit var listView: ListView
     private lateinit var empty: TextView
     private lateinit var search: EditText
+    private lateinit var adapter: GroupedEntriesAdapter
 
     /** Todas as entradas decifradas em memória (sessão desbloqueada). */
     private var allEntries: List<Vault.EntrySummary> = emptyList()
-
-    /** Subconjunto exibido após aplicar o termo de busca; é a fonte do clique. */
-    private var filtered: List<Vault.EntrySummary> = emptyList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         listView = ListView(this)
+        adapter = GroupedEntriesAdapter(this)
+        listView.adapter = adapter
         empty = Theme.bodyText(this, EMPTY_VAULT, muted = true)
         search = Theme.searchField(this, "Buscar por rótulo").apply {
             addTextChangedListener(object : TextWatcher {
@@ -81,9 +80,10 @@ class ListActivity : SecureActivity() {
         setContentView(Theme.staticScreen(this, card))
 
         listView.setOnItemClickListener { _, _, pos, _ ->
+            val entry = adapter.itemAt(pos) ?: return@setOnItemClickListener // ignora cabeçalhos
             startActivity(
                 Intent(this, DetailActivity::class.java)
-                    .putExtra(DetailActivity.EXTRA_ID, filtered[pos].id),
+                    .putExtra(DetailActivity.EXTRA_ID, entry.id),
             )
         }
     }
@@ -109,10 +109,9 @@ class ListActivity : SecureActivity() {
      */
     private fun applyFilter() {
         val query = search.text?.toString().orEmpty()
-        filtered = allEntries.filter { LabelSearch.matches(it.label, query) }
-        listView.adapter = ArrayAdapter(
-            this, android.R.layout.simple_list_item_1, filtered.map { it.label },
-        )
+        val filtered = allEntries.filter { LabelSearch.matches(it.label, query) }
+        // Reagrupa o resultado filtrado por categoria; grupos sem resultado simplesmente não surgem.
+        adapter.submit(GroupedEntriesAdapter.buildRows(filtered))
 
         search.visibility = if (allEntries.isEmpty()) View.GONE else View.VISIBLE
         empty.text = if (allEntries.isEmpty()) EMPTY_VAULT else NO_RESULTS
