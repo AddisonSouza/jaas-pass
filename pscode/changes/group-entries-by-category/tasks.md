@@ -2,13 +2,13 @@
 
 - [x] 1.1 Em `VaultDbHelper`, adicionar a coluna `category BLOB` (nullable) ao `CREATE TABLE entries` (`onCreate`) e bumpar `DB_VERSION` 2→3.
 - [x] 1.2 Em `onUpgrade`, tratar `oldVersion < 3` com `ALTER TABLE entries ADD COLUMN category BLOB`, mantendo o ramo v1→v2 (envelope biométrico) intacto e encadeável.
-- [ ] 1.3 Validar a migração: cofre v2 existente abre após atualização com a coluna NULL e entradas inalteradas (cenário "Cofre antigo continua válido após atualização").
+- [x] 1.3 Validar a migração: cofre v2 existente abre após atualização com a coluna NULL e entradas inalteradas (cenário "Cofre antigo continua válido após atualização").
 
 ## 2. Camada de dados (entry-categorization, entry-management)
 
 - [x] 2.1 Adicionar `category: ByteArray?` em `EncryptedEntry` e mapear no `Cursor.toEntry()`.
 - [x] 2.2 Em `VaultRepository.insertEntry`/`updateEntry`, gravar `category` (ou `putNull`), e garantir que `getEntry`/`listEntries` selecionem a coluna.
-- [ ] 2.3 Verificar (inspeção do .db / teste) que a categoria é persistida apenas como ciphertext+nonce, nunca em texto claro (cenário "Inspeção do banco não revela categorias").
+- [x] 2.3 Verificar (inspeção do .db / teste) que a categoria é persistida apenas como ciphertext+nonce, nunca em texto claro (cenário "Inspeção do banco não revela categorias").
 
 ## 3. Fachada Vault (entry-management, entry-categorization)
 
@@ -32,4 +32,4 @@
 ## 6. Verificação
 
 - [x] 6.1 `./gradlew :app:assembleDebug` compila sem novas dependências; `./gradlew :vault-crypto:test` (self-test de `LabelSearch`) verde.
-- [ ] 6.2 Sideload do APK e smoke test: criar/editar com categoria, ver agrupamento com "Sem categoria" ao final, autocomplete sugerindo categorias, busca compondo com os grupos, e bloquear/desbloquear sem vazar estado.
+- [x] 6.2 Sideload do APK e smoke test: criar/editar com categoria, ver agrupamento com "Sem categoria" ao final, autocomplete sugerindo categorias, busca compondo com os grupos, e bloquear/desbloquear sem vazar estado.
