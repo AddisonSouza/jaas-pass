@@ -9,6 +9,7 @@ import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -137,6 +138,17 @@ object Theme {
     /** EditText estilizado para campos comuns (rótulo, usuário...). */
     fun input(context: Context, hintText: String, type: Int): EditText =
         stylize(context, EditText(context), hintText, type).apply {
+            layoutParams = spacedRow(context)
+        }
+
+    /**
+     * Campo de busca (change "search-entries-by-label"): EditText estilizado de linha única, com
+     * ação de IME "buscar". O filtro em si é ligado pelo chamador via `TextWatcher`.
+     */
+    fun searchField(context: Context, hintText: String): EditText =
+        stylize(context, EditText(context), hintText, InputType.TYPE_CLASS_TEXT).apply {
+            isSingleLine = true
+            imeOptions = EditorInfo.IME_ACTION_SEARCH
             layoutParams = spacedRow(context)
         }
 

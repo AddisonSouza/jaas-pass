@@ -2,15 +2,19 @@ package com.jaaspass.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.ListView
 import android.widget.TextView
 import com.jaaspass.crypto.VaultSession
 import com.jaaspass.data.Vault
+import com.jaaspass.search.LabelSearch
 
 /**
  * Tarefa 4.2 — Lista de entradas (rótulos decriptados em memória). Só funciona com a sessão
@@ -21,13 +25,26 @@ class ListActivity : SecureActivity() {
 
     private lateinit var listView: ListView
     private lateinit var empty: TextView
-    private var entries: List<Vault.EntrySummary> = emptyList()
+    private lateinit var search: EditText
+
+    /** Todas as entradas decifradas em memória (sessão desbloqueada). */
+    private var allEntries: List<Vault.EntrySummary> = emptyList()
+
+    /** Subconjunto exibido após aplicar o termo de busca; é a fonte do clique. */
+    private var filtered: List<Vault.EntrySummary> = emptyList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         listView = ListView(this)
-        empty = Theme.bodyText(this, "Nenhuma entrada ainda. Toque em “Adicionar”.", muted = true)
+        empty = Theme.bodyText(this, EMPTY_VAULT, muted = true)
+        search = Theme.searchField(this, "Buscar por rótulo").apply {
+            addTextChangedListener(object : TextWatcher {
+                override fun afterTextChanged(s: Editable?) = applyFilter()
+                override fun beforeTextChanged(s: CharSequence?, st: Int, c: Int, a: Int) {}
+                override fun onTextChanged(s: CharSequence?, st: Int, b: Int, c: Int) {}
+            })
+        }
 
         val header = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
@@ -55,6 +72,7 @@ class ListActivity : SecureActivity() {
                     startActivity(Intent(this@ListActivity, AddEditActivity::class.java))
                 }
             })
+            addView(search)
             addView(empty)
             addView(listView, LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f,
@@ -65,7 +83,7 @@ class ListActivity : SecureActivity() {
         listView.setOnItemClickListener { _, _, pos, _ ->
             startActivity(
                 Intent(this, DetailActivity::class.java)
-                    .putExtra(DetailActivity.EXTRA_ID, entries[pos].id),
+                    .putExtra(DetailActivity.EXTRA_ID, filtered[pos].id),
             )
         }
     }
@@ -80,12 +98,27 @@ class ListActivity : SecureActivity() {
     }
 
     private fun refresh() {
-        entries = vault.list()
+        allEntries = vault.list()
+        applyFilter()
+    }
+
+    /**
+     * Filtra [allEntries] pelo termo atual (em memória, sobre os rótulos já decifrados) e atualiza
+     * a lista. Cofre vazio e "sem resultado" recebem mensagens distintas; a busca some quando não
+     * há nenhuma entrada (nada a filtrar).
+     */
+    private fun applyFilter() {
+        val query = search.text?.toString().orEmpty()
+        filtered = allEntries.filter { LabelSearch.matches(it.label, query) }
         listView.adapter = ArrayAdapter(
-            this, android.R.layout.simple_list_item_1, entries.map { it.label },
+            this, android.R.layout.simple_list_item_1, filtered.map { it.label },
         )
-        empty.visibility = if (entries.isEmpty()) View.VISIBLE else View.GONE
-        listView.visibility = if (entries.isEmpty()) View.GONE else View.VISIBLE
+
+        search.visibility = if (allEntries.isEmpty()) View.GONE else View.VISIBLE
+        empty.text = if (allEntries.isEmpty()) EMPTY_VAULT else NO_RESULTS
+        val hasResults = filtered.isNotEmpty()
+        empty.visibility = if (hasResults) View.GONE else View.VISIBLE
+        listView.visibility = if (hasResults) View.VISIBLE else View.GONE
     }
 
     private fun lockAndExit() {
@@ -99,5 +132,10 @@ class ListActivity : SecureActivity() {
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP),
         )
         finish()
+    }
+
+    private companion object {
+        const val EMPTY_VAULT = "Nenhuma entrada ainda. Toque em “Adicionar”."
+        const val NO_RESULTS = "Nenhum resultado."
     }
 }

@@ -38,6 +38,16 @@ tasks.register<JavaExec>("passwordGenSelfTest") {
     classpath = sourceSets["test"].runtimeClasspath
 }
 
+// Change "search-entries-by-label" — roda os self-tests do LabelSearch (mesmo harness, zero deps).
+//   ./gradlew :vault-crypto:labelSearchSelfTest
+tasks.register<JavaExec>("labelSearchSelfTest") {
+    group = "verification"
+    description = "Executa os self-tests do LabelSearch (harness próprio, zero deps)."
+    dependsOn("testClasses")
+    mainClass.set("com.jaaspass.search.LabelSearchSelfTestKt")
+    classpath = sourceSets["test"].runtimeClasspath
+}
+
 // Validação 6.2/6.3 — emite SQL (esquema do VaultRepository + blobs reais) para montar um .db
 // inspecionável com o sqlite3 do platform-tools.
 tasks.register<JavaExec>("vaultDbProbe") {
