@@ -10,6 +10,7 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
+import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -151,6 +152,19 @@ object Theme {
             imeOptions = EditorInfo.IME_ACTION_SEARCH
             layoutParams = spacedRow(context)
         }
+
+    /**
+     * Campo com autocomplete (change "group-entries-by-category"): `AutoCompleteTextView` estilizado,
+     * de linha única. O chamador liga as sugestões via `setAdapter` (ex.: categorias já usadas).
+     */
+    fun autoCompleteField(context: Context, hintText: String): AutoCompleteTextView {
+        val field = AutoCompleteTextView(context)
+        stylize(context, field, hintText, InputType.TYPE_CLASS_TEXT)
+        field.isSingleLine = true
+        field.threshold = 1 // sugere a partir do 1º caractere
+        field.layoutParams = spacedRow(context)
+        return field
+    }
 
     private fun primaryStyle(context: Context, button: Button) = button.apply {
         background = roundedBg(context, accent)
