@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Cor de fundo do ícone adaptativo. Mesmo tom escuro da UI (ver paleta em ui/*:
+  #121317 fundo base). Mantida como recurso, sem dependências de terceiros.
+-->
+<resources>
+    <color name="ic_launcher_background">#121317</color>
+</resources>
